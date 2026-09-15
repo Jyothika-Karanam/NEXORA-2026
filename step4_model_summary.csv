@@ -1,0 +1,12 @@
+metric,value
+target,next-week read success < 80%
+target_threshold,0.8
+roc_auc,0.9312
+precision,0.8254
+recall,0.7536
+best_cost_threshold,0.2
+validation_cost,156600
+telemetry_rows_aligned,6926
+telemetry_coverage,0.9999
+final_prediction_rows,120
+prediction_weeks,8

@@ -1,0 +1,4 @@
+definition,threshold,problem_weeks,total_weeks,problem_rate
+Next-week read success < 70%,0.7,936,6927,0.13512343005630142
+Next-week read success < 80%,0.8,1223,6927,0.1765555074346759
+Next-week read success < 90%,0.9,3106,6927,0.4483903565757182

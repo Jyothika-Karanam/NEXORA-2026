@@ -1,6 +1,7 @@
 import os
 import glob
 import warnings
+import argparse
 
 import numpy as np
 import pandas as pd
@@ -13,7 +14,17 @@ from sklearn.preprocessing import OneHotEncoder
 warnings.filterwarnings("ignore")
 
 
+parser = argparse.ArgumentParser()
 
+parser.add_argument(
+    "--data",
+    default=".",
+    help="Path to challenge data directory"
+)
+
+args = parser.parse_args()
+
+DATA_DIR = args.data
 
 # ============================================================
 # NEXORA 2026 - STEP 4 MACHINE LEARNING MODEL V3
@@ -322,8 +333,13 @@ model_base["success_change_2w"] = (
 print("\n4. LOADING GATEWAY MASTER")
 print("-" * 75)
 
-gateway_master_file = os.path.join(`r`n    DATA_DIR,`r`n    "gateway_master.csv"`r`n)`r`n`r`ngateway_master = pd.read_csv(`r`n    gateway_master_file,`r`n    encoding="latin1"`r`n)
-
+gateway_master = pd.read_csv(
+    os.path.join(
+        DATA_DIR,
+        "gateway_master.csv"
+    ),
+    encoding="latin1"
+)
 gateway_master["gateway_id"] = (
     normalize_gateway_id(
         gateway_master["gateway_id"]
@@ -335,7 +351,6 @@ print(
     len(gateway_master)
 )
 
-
 # ============================================================
 # 6. LOAD TELEMETRY
 # ============================================================
@@ -346,13 +361,13 @@ print("-" * 75)
 telemetry_files = sorted(
     glob.glob(
         os.path.join(
+            DATA_DIR,
             "telemetry",
             "month=*",
             "*.parquet"
         )
     )
 )
-
 print(
     "Telemetry partitions:",
     len(telemetry_files)
@@ -2072,4 +2087,5 @@ print(
 print(
     "=" * 75
 )
+
 

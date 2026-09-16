@@ -359,3 +359,9 @@ Instead of attempting to guarantee which gateways will fail, it answers the oper
 > **Which 15 gateways should the field team prioritize this week?**
 
 The final Random Forest model achieved a **23.0% lower evaluated cost than the supplied 3-sigma baseline**, while keeping the 15-gateway weekly limit and using information available before each prediction week.
+## Demo Video
+
+A short screen-recording demonstrating the project execution, ML-based gateway ranking,
+validation results, and repository contents is available here:
+
+[Watch the LPDG Demo Video]https://drive.google.com/file/d/1AAgRy5j4UalpkSHarJFx2YNa57pdp9eP/view?usp=sharing

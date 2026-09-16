@@ -18,9 +18,9 @@ args = parser.parse_args()
 DATA_DIR = args.data
 
 
-print("=" * 70)
+print("=" * 60)
 print("NEXORA 2026 - STEP 1 DATA CHECK")
-print("=" * 70)
+print("=" * 60)
 
 
 # ---------------------------------------------------------
@@ -28,7 +28,6 @@ print("=" * 70)
 # ---------------------------------------------------------
 
 print("\n1. CHECKING FILES")
-print("-" * 70)
 
 required_files = [
     "gateway_master.csv",
@@ -52,7 +51,6 @@ for file_name in required_files:
 # ---------------------------------------------------------
 
 print("\n2. LOADING DATASETS")
-print("-" * 70)
 
 gateway_master = pd.read_csv(
     os.path.join(DATA_DIR, "gateway_master.csv"),
@@ -73,30 +71,33 @@ engineer_review = pd.read_excel(
     os.path.join(DATA_DIR, "engineer_review_2026-02.xlsx")
 )
 
-print("gateway_master:", gateway_master.shape)
-print("field_visits:", field_visits.shape)
-print("meter_read_success:", meter_read_success.shape)
-print("engineer_review:", engineer_review.shape)
+print(
+    f"Gateway master: {gateway_master.shape[0]} rows, "
+    f"{gateway_master.shape[1]} columns"
+)
+
+print(
+    f"Field visits: {field_visits.shape[0]} rows, "
+    f"{field_visits.shape[1]} columns"
+)
+
+print(
+    f"Meter read success: {meter_read_success.shape[0]} rows, "
+    f"{meter_read_success.shape[1]} columns"
+)
+
+print(
+    f"Engineer review: {engineer_review.shape[0]} rows, "
+    f"{engineer_review.shape[1]} columns"
+)
 
 
 # ---------------------------------------------------------
 # 3. SHOW COLUMNS
 # ---------------------------------------------------------
 
-print("\n3. COLUMNS")
-print("-" * 70)
-
-print("\nGateway Master:")
-print(list(gateway_master.columns))
-
-print("\nField Visits:")
-print(list(field_visits.columns))
-
-print("\nMeter Read Success:")
-print(list(meter_read_success.columns))
-
-print("\nEngineer Review:")
-print(list(engineer_review.columns))
+# Columns are checked internally but not printed individually.
+# This keeps terminal output concise.
 
 
 # ---------------------------------------------------------
@@ -104,25 +105,24 @@ print(list(engineer_review.columns))
 # ---------------------------------------------------------
 
 print("\n4. GATEWAY COUNTS")
-print("-" * 70)
 
 print(
-    "Gateway master unique gateways:",
+    "Gateway master:",
     gateway_master["gateway_id"].nunique()
 )
 
 print(
-    "Field visit unique gateways:",
+    "Field visit:",
     field_visits["gateway_id"].nunique()
 )
 
 print(
-    "Meter read unique gateways:",
+    "Meter read:",
     meter_read_success["gateway_id"].nunique()
 )
 
 print(
-    "Engineer review unique gateways:",
+    "Engineer review:",
     engineer_review["gateway_id"].nunique()
 )
 
@@ -131,20 +131,17 @@ print(
 # 5. MISSING VALUES
 # ---------------------------------------------------------
 
-print("\n5. MISSING VALUES")
-print("-" * 70)
+print("\n5. MISSING VALUE CHECK")
 
-print("\nGateway Master missing values:")
-print(gateway_master.isna().sum())
+gateway_missing = gateway_master.isna().sum().sum()
+field_missing = field_visits.isna().sum().sum()
+meter_missing = meter_read_success.isna().sum().sum()
+review_missing = engineer_review.isna().sum().sum()
 
-print("\nField Visits missing values:")
-print(field_visits.isna().sum())
-
-print("\nMeter Read Success missing values:")
-print(meter_read_success.isna().sum())
-
-print("\nEngineer Review missing values:")
-print(engineer_review.isna().sum())
+print(f"Gateway master missing values: {gateway_missing}")
+print(f"Field visits missing values: {field_missing}")
+print(f"Meter read missing values: {meter_missing}")
+print(f"Engineer review missing values: {review_missing}")
 
 
 # ---------------------------------------------------------
@@ -152,43 +149,31 @@ print(engineer_review.isna().sum())
 # ---------------------------------------------------------
 
 print("\n6. DUPLICATE CHECK")
-print("-" * 70)
 
-print(
-    "Gateway master duplicate rows:",
-    gateway_master.duplicated().sum()
-)
+gateway_duplicates = gateway_master.duplicated().sum()
+field_duplicates = field_visits.duplicated().sum()
+meter_duplicates = meter_read_success.duplicated().sum()
+review_duplicates = engineer_review.duplicated().sum()
 
-print(
-    "Field visit duplicate rows:",
-    field_visits.duplicated().sum()
-)
-
-print(
-    "Meter read duplicate rows:",
-    meter_read_success.duplicated().sum()
-)
-
-print(
-    "Engineer review duplicate rows:",
-    engineer_review.duplicated().sum()
-)
+print(f"Gateway master: {gateway_duplicates}")
+print(f"Field visits: {field_duplicates}")
+print(f"Meter read: {meter_duplicates}")
+print(f"Engineer review: {review_duplicates}")
 
 
 # ---------------------------------------------------------
 # 7. FIELD VISIT INFORMATION
 # ---------------------------------------------------------
 
-print("\n7. FIELD VISIT INFORMATION")
-print("-" * 70)
+print("\n7. FIELD VISIT SUMMARY")
 
 if "reason_reported" in field_visits.columns:
-    print("\nVisit reasons:")
-    print(field_visits["reason_reported"].value_counts(dropna=False))
+    visit_reason_count = field_visits["reason_reported"].nunique()
+    print(f"Unique visit reasons: {visit_reason_count}")
 
 if "outcome" in field_visits.columns:
-    print("\nVisit outcomes:")
-    print(field_visits["outcome"].value_counts(dropna=False))
+    visit_outcome_count = field_visits["outcome"].nunique()
+    print(f"Unique visit outcomes: {visit_outcome_count}")
 
 
 # ---------------------------------------------------------
@@ -196,7 +181,6 @@ if "outcome" in field_visits.columns:
 # ---------------------------------------------------------
 
 print("\n8. FIELD VISIT DATES")
-print("-" * 70)
 
 if "requested_on" in field_visits.columns:
     field_visits["requested_on"] = pd.to_datetime(
@@ -204,9 +188,10 @@ if "requested_on" in field_visits.columns:
         errors="coerce"
     )
 
-    print("Requested date:")
-    print("Minimum:", field_visits["requested_on"].min())
-    print("Maximum:", field_visits["requested_on"].max())
+    print(
+        f"Requested: {field_visits['requested_on'].min().date()} "
+        f"to {field_visits['requested_on'].max().date()}"
+    )
 
 if "visited_on" in field_visits.columns:
     field_visits["visited_on"] = pd.to_datetime(
@@ -214,9 +199,10 @@ if "visited_on" in field_visits.columns:
         errors="coerce"
     )
 
-    print("\nVisited date:")
-    print("Minimum:", field_visits["visited_on"].min())
-    print("Maximum:", field_visits["visited_on"].max())
+    print(
+        f"Visited: {field_visits['visited_on'].min().date()} "
+        f"to {field_visits['visited_on'].max().date()}"
+    )
 
 
 # ---------------------------------------------------------
@@ -224,7 +210,6 @@ if "visited_on" in field_visits.columns:
 # ---------------------------------------------------------
 
 print("\n9. METER READ SUCCESS")
-print("-" * 70)
 
 meter_read_success["meters_expected"] = pd.to_numeric(
     meter_read_success["meters_expected"],
@@ -242,18 +227,18 @@ meter_read_success["read_success_rate"] = (
 )
 
 print(
-    "Overall average read success rate:",
-    meter_read_success["read_success_rate"].mean()
+    f"Average: "
+    f"{meter_read_success['read_success_rate'].mean():.4f}"
 )
 
 print(
-    "Minimum read success rate:",
-    meter_read_success["read_success_rate"].min()
+    f"Minimum: "
+    f"{meter_read_success['read_success_rate'].min():.4f}"
 )
 
 print(
-    "Maximum read success rate:",
-    meter_read_success["read_success_rate"].max()
+    f"Maximum: "
+    f"{meter_read_success['read_success_rate'].max():.4f}"
 )
 
 
@@ -262,11 +247,12 @@ print(
 # ---------------------------------------------------------
 
 print("\n10. ENGINEER REVIEW")
-print("-" * 70)
 
 if "Kategorie" in engineer_review.columns:
-    print("\nEngineer categories:")
-    print(engineer_review["Kategorie"].value_counts(dropna=False))
+    print(
+        "Categories:",
+        engineer_review["Kategorie"].nunique()
+    )
 
 
 # ---------------------------------------------------------
@@ -274,7 +260,6 @@ if "Kategorie" in engineer_review.columns:
 # ---------------------------------------------------------
 
 print("\n11. GATEWAY ID COVERAGE")
-print("-" * 70)
 
 master_ids = set(gateway_master["gateway_id"].dropna())
 
@@ -283,17 +268,17 @@ meter_ids = set(meter_read_success["gateway_id"].dropna())
 review_ids = set(engineer_review["gateway_id"].dropna())
 
 print(
-    "Field visit gateways not in gateway master:",
+    "Field visit IDs not in master:",
     len(visit_ids - master_ids)
 )
 
 print(
-    "Meter-read gateways not in gateway master:",
+    "Meter-read IDs not in master:",
     len(meter_ids - master_ids)
 )
 
 print(
-    "Engineer-review gateways not in gateway master:",
+    "Engineer-review IDs not in master:",
     len(review_ids - master_ids)
 )
 
@@ -303,7 +288,6 @@ print(
 # ---------------------------------------------------------
 
 print("\n12. TELEMETRY CHECK")
-print("-" * 70)
 
 telemetry_path = os.path.join(
     DATA_DIR,
@@ -314,15 +298,13 @@ telemetry_path = os.path.join(
 
 if os.path.exists(telemetry_path):
 
-    print("Loading one telemetry month only:")
-    print(telemetry_path)
-
     telemetry = pd.read_parquet(telemetry_path)
 
-    print("Telemetry shape:", telemetry.shape)
-
-    print("\nFirst telemetry columns:")
-    print(list(telemetry.columns))
+    print(
+        f"January telemetry: "
+        f"{telemetry.shape[0]} rows, "
+        f"{telemetry.shape[1]} columns"
+    )
 
     important_columns = [
         "gateway_id",
@@ -341,15 +323,19 @@ if os.path.exists(telemetry_path):
         "online_duration_mins"
     ]
 
-    print("\nImportant telemetry columns:")
+    missing_important = [
+        column
+        for column in important_columns
+        if column not in telemetry.columns
+    ]
 
-    for column in important_columns:
-        if column in telemetry.columns:
-            print(f"[OK] {column}")
-        else:
-            print(f"[MISSING] {column}")
-
-    print("\nTelemetry date range:")
+    if missing_important:
+        print(
+            "Missing important telemetry columns:",
+            len(missing_important)
+        )
+    else:
+        print("Important telemetry columns: OK")
 
     if "DateDt" in telemetry.columns:
         dates = pd.to_datetime(
@@ -357,11 +343,14 @@ if os.path.exists(telemetry_path):
             errors="coerce"
         )
 
-        print("Minimum:", dates.min())
-        print("Maximum:", dates.max())
+        print(
+            f"Telemetry dates: "
+            f"{dates.min().date()} "
+            f"to {dates.max().date()}"
+        )
 
     print(
-        "\nTelemetry unique gateways:",
+        "Telemetry unique gateways:",
         telemetry["gateway_id"].nunique()
     )
 
@@ -373,13 +362,6 @@ else:
 # 13. FINAL MESSAGE
 # ---------------------------------------------------------
 
-print("\n" + "=" * 70)
+print("\n" + "=" * 60)
 print("STEP 1 DATA CHECK COMPLETED")
-print("=" * 70)
-
-print(
-    "\nIMPORTANT:"
-    "\nThis step only checks and understands the available data."
-    "\nWe are NOT defining the ML target yet."
-    "\nWe are NOT changing predictions.csv."
-)
+print("=" * 60)

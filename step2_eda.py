@@ -1,12 +1,12 @@
-
 import pandas as pd
 import numpy as np
 import os
 import argparse
 
-print("=" * 70)
+print("=" * 60)
 print("NEXORA 2026 - STEP 2 EXPLORATORY DATA ANALYSIS")
-print("=" * 70)
+print("=" * 60)
+
 
 # ---------------------------------------------------------
 # COMMAND-LINE DATA PATH
@@ -26,7 +26,6 @@ DATA_DIR = args.data
 # 1. LOAD DATA
 # ---------------------------------------------------------
 print("\n1. LOADING DATA")
-print("-" * 70)
 
 gateway_master = pd.read_csv(
     os.path.join(DATA_DIR, "gateway_master.csv"),
@@ -47,39 +46,6 @@ engineer_review = pd.read_excel(
     os.path.join(DATA_DIR, "engineer_review_2026-02.xlsx")
 )
 
-print("\n--- GATEWAY ID DIAGNOSTIC ---")
-
-print("Gateway master:")
-print(gateway_master["gateway_id"].head(10).tolist())
-print(gateway_master["gateway_id"].dtype)
-
-print("\nField visits:")
-print(field_visits["gateway_id"].head(10).tolist())
-print(field_visits["gateway_id"].dtype)
-
-print("\nMeter read success:")
-print(meter_read_success["gateway_id"].head(10).tolist())
-print(meter_read_success["gateway_id"].dtype)
-
-print("\nEngineer review:")
-print(engineer_review["gateway_id"].head(10).tolist())
-print(engineer_review["gateway_id"].dtype)
-
-print("\nCommon IDs:")
-print(
-    len(
-        set(gateway_master["gateway_id"])
-        & set(meter_read_success["gateway_id"])
-    )
-)
-
-print(
-    "Master ∩ Visits:",
-    len(
-        set(gateway_master["gateway_id"])
-        & set(field_visits["gateway_id"])
-    )
-)
 
 # Standardize gateway IDs before any merge
 def normalize_gateway_id(series):
@@ -90,6 +56,7 @@ def normalize_gateway_id(series):
         .str.replace(":", "", regex=False)
         .str.replace("-", "", regex=False)
     )
+
 
 gateway_master["gateway_id"] = normalize_gateway_id(
     gateway_master["gateway_id"]
@@ -106,6 +73,7 @@ meter_read_success["gateway_id"] = normalize_gateway_id(
 engineer_review["gateway_id"] = normalize_gateway_id(
     engineer_review["gateway_id"]
 )
+
 
 # Convert dates
 field_visits["requested_on"] = pd.to_datetime(
@@ -134,7 +102,6 @@ print(f"Engineer review: {engineer_review.shape}")
 # 2. METER READ SUCCESS ANALYSIS
 # ---------------------------------------------------------
 print("\n2. METER READ SUCCESS ANALYSIS")
-print("-" * 70)
 
 meter_read_success["read_success_rate"] = np.where(
     meter_read_success["meters_expected"] > 0,
@@ -144,7 +111,7 @@ meter_read_success["read_success_rate"] = np.where(
 )
 
 print(
-    "Overall mean read success:",
+    "Mean read success:",
     round(meter_read_success["read_success_rate"].mean(), 4)
 )
 
@@ -153,7 +120,6 @@ print(
     round(meter_read_success["read_success_rate"].median(), 4)
 )
 
-print("\nRead success distribution:")
 
 bins = [-0.01, 0.50, 0.70, 0.80, 0.90, 1.01]
 
@@ -171,27 +137,37 @@ meter_read_success["success_band"] = pd.cut(
     labels=labels
 )
 
-print(
+success_distribution = (
     meter_read_success["success_band"]
     .value_counts()
     .sort_index()
 )
+
+print("Read-success bands:")
+print(success_distribution.to_string())
 
 
 # ---------------------------------------------------------
 # 3. FIELD VISIT ANALYSIS
 # ---------------------------------------------------------
 print("\n3. FIELD VISIT ANALYSIS")
-print("-" * 70)
 
 print("Total visits:", len(field_visits))
-print("Unique gateways visited:", field_visits["gateway_id"].nunique())
+print(
+    "Unique gateways visited:",
+    field_visits["gateway_id"].nunique()
+)
 
-print("\nVisit outcomes:")
-print(field_visits["outcome"].value_counts())
+print(
+    "Visit outcomes:",
+    field_visits["outcome"].nunique()
+)
 
-print("\nVisit reasons:")
-print(field_visits["reason_reported"].value_counts())
+print(
+    "Visit reasons:",
+    field_visits["reason_reported"].nunique()
+)
+
 
 # Count visits per gateway
 visit_counts = (
@@ -200,15 +176,21 @@ visit_counts = (
     .reset_index(name="visit_count")
 )
 
-print("\nVisit count per gateway:")
-print(visit_counts["visit_count"].describe().round(2))
+print(
+    "Average visits per visited gateway:",
+    round(visit_counts["visit_count"].mean(), 2)
+)
+
+print(
+    "Maximum visits for one gateway:",
+    int(visit_counts["visit_count"].max())
+)
 
 
 # ---------------------------------------------------------
 # 4. VISIT OUTCOME QUALITY
 # ---------------------------------------------------------
 print("\n4. VISIT OUTCOME ANALYSIS")
-print("-" * 70)
 
 outcome_summary = (
     field_visits.groupby("outcome")
@@ -223,14 +205,19 @@ outcome_summary["avg_technician_hours"] = (
     outcome_summary["avg_technician_hours"].round(2)
 )
 
-print(outcome_summary.to_string(index=False))
+print(
+    "Outcome summary:"
+)
+
+print(
+    outcome_summary.to_string(index=False)
+)
 
 
 # ---------------------------------------------------------
 # 5. METER SUCCESS VS VISITS
 # ---------------------------------------------------------
 print("\n5. METER SUCCESS VS FIELD VISITS")
-print("-" * 70)
 
 gateway_meter = (
     meter_read_success.groupby("gateway_id")
@@ -258,13 +245,6 @@ gateway_analysis["visit_count"] = (
     gateway_analysis["visit_count"].fillna(0)
 )
 
-print("\nGateway-level read success vs visit count:")
-
-print(
-    gateway_analysis[
-        ["avg_read_success", "visit_count"]
-    ].describe().round(3)
-)
 
 # Create broad success groups
 gateway_analysis["success_group"] = pd.cut(
@@ -284,18 +264,32 @@ success_visit_summary = (
     .reset_index()
 )
 
-print("\nVisit frequency by average meter-read success:")
-print(success_visit_summary.to_string(index=False))
+success_visit_summary["avg_visits"] = (
+    success_visit_summary["avg_visits"].round(2)
+)
+
+success_visit_summary["median_visits"] = (
+    success_visit_summary["median_visits"].round(2)
+)
+
+print(
+    "Visit frequency by meter-read success:"
+)
+
+print(
+    success_visit_summary.to_string(index=False)
+)
 
 
 # ---------------------------------------------------------
 # 6. ENGINEER REVIEW ANALYSIS
 # ---------------------------------------------------------
 print("\n6. ENGINEER REVIEW ANALYSIS")
-print("-" * 70)
 
-print("Engineer review categories:")
-print(engineer_review["Kategorie"].value_counts())
+print(
+    "Engineer review categories:",
+    engineer_review["Kategorie"].nunique()
+)
 
 review_counts = (
     engineer_review
@@ -303,8 +297,14 @@ review_counts = (
     .nunique()
 )
 
-print("\nUnique gateways by engineer category:")
-print(review_counts)
+print(
+    "Unique gateways by category:"
+)
+
+print(
+    review_counts.to_string()
+)
+
 
 # Merge review with gateway analysis
 review_analysis = gateway_analysis.merge(
@@ -313,7 +313,6 @@ review_analysis = gateway_analysis.merge(
     how="left"
 )
 
-print("\nMeter-read success by engineer category:")
 
 review_summary = (
     review_analysis
@@ -330,28 +329,31 @@ review_summary = (
 
 review_summary = review_summary.round(3)
 
-print(review_summary.to_string(index=False))
+print("Read success by engineer category:")
+print(
+    review_summary.to_string(index=False)
+)
 
 
 # ---------------------------------------------------------
 # 7. VISIT SUCCESS BY REASON
 # ---------------------------------------------------------
 print("\n7. VISIT REASON VS OUTCOME")
-print("-" * 70)
 
 reason_outcome = pd.crosstab(
     field_visits["reason_reported"],
     field_visits["outcome"]
 )
 
-print(reason_outcome.to_string())
+print(
+    "Reason-outcome analysis completed."
+)
 
 
 # ---------------------------------------------------------
 # 8. TELEMETRY SAMPLE ANALYSIS
 # ---------------------------------------------------------
 print("\n8. TELEMETRY ANALYSIS")
-print("-" * 70)
 
 telemetry_path = os.path.join(
     DATA_DIR,
@@ -360,9 +362,6 @@ telemetry_path = os.path.join(
     "part-0.parquet"
 )
 
-print("Loading:")
-print(telemetry_path)
-
 telemetry = pd.read_parquet(telemetry_path)
 
 # Standardize telemetry gateway IDs too
@@ -370,7 +369,12 @@ telemetry["gateway_id"] = normalize_gateway_id(
     telemetry["gateway_id"]
 )
 
-print("Telemetry shape:", telemetry.shape)
+print(
+    f"January telemetry: "
+    f"{telemetry.shape[0]} rows, "
+    f"{telemetry.shape[1]} columns"
+)
+
 
 # Important numeric columns
 telemetry_features = [
@@ -404,11 +408,9 @@ available_features = [
 
 telemetry_summary = telemetry[available_features].describe().T
 
-print("\nTelemetry feature summary:")
 print(
-    telemetry_summary[
-        ["mean", "std", "min", "50%", "max"]
-    ].round(3).to_string()
+    "Telemetry numeric features analyzed:",
+    len(available_features)
 )
 
 
@@ -416,7 +418,6 @@ print(
 # 9. TELEMETRY GATEWAY-LEVEL AGGREGATION
 # ---------------------------------------------------------
 print("\n9. TELEMETRY GATEWAY-LEVEL SIGNALS")
-print("-" * 70)
 
 telemetry_gateway = (
     telemetry.groupby("gateway_id")
@@ -438,11 +439,9 @@ telemetry_gateway = (
     .reset_index()
 )
 
-print("Telemetry gateways:", len(telemetry_gateway))
-
-print("\nTelemetry gateway-level summary:")
 print(
-    telemetry_gateway.describe().round(3).to_string()
+    "Telemetry gateways:",
+    len(telemetry_gateway)
 )
 
 
@@ -450,7 +449,6 @@ print(
 # 10. TELEMETRY VS FIELD VISITS
 # ---------------------------------------------------------
 print("\n10. TELEMETRY VS FIELD VISITS")
-print("-" * 70)
 
 telemetry_visit = telemetry_gateway.merge(
     visit_counts,
@@ -466,7 +464,6 @@ telemetry_visit["visited"] = (
     telemetry_visit["visit_count"] > 0
 ).astype(int)
 
-print("\nAverage telemetry signals by visited/not visited:")
 
 telemetry_comparison = (
     telemetry_visit
@@ -487,14 +484,15 @@ telemetry_comparison = (
     .reset_index()
 )
 
-print(telemetry_comparison.round(3).to_string(index=False))
+print(
+    "Visited vs non-visited telemetry comparison completed."
+)
 
 
 # ---------------------------------------------------------
 # 11. SIMPLE CORRELATION CHECK
 # ---------------------------------------------------------
 print("\n11. SIMPLE CORRELATION CHECK")
-print("-" * 70)
 
 correlation_columns = [
     "avg_reboots",
@@ -521,30 +519,30 @@ visit_correlations = (
     .sort_values(key=abs, ascending=False)
 )
 
-print("\nCorrelation with field visit count:")
-print(visit_correlations.round(3).to_string())
+print(
+    "Correlation analysis completed."
+)
 
 
 # ---------------------------------------------------------
 # 12. KEY FINDINGS
 # ---------------------------------------------------------
 print("\n12. INITIAL FINDINGS")
-print("-" * 70)
 
-print("""
-These are exploratory findings only.
+print(
+    "Exploratory analysis completed."
+)
 
-We are NOT yet defining:
-- the final DS target,
-- the final visit threshold,
-- the final ML model,
-- or the final prediction scores.
+print(
+    "Key relationships identified for further testing."
+)
 
-The purpose of this step is to identify which signals appear useful
-and which relationships need further testing.
-""")
+print(
+    "Target, visit threshold, ML model, and prediction scores "
+    "are defined in later steps."
+)
 
-print("=" * 70)
+
+print("\n" + "=" * 60)
 print("STEP 2 EDA COMPLETED")
-print("=" * 70)
-
+print("=" * 60)

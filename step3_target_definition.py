@@ -18,8 +18,8 @@ print("=" * 70)
 # 1. LOAD DATA
 # ------------------------------------------------------------
 
-METER_FILE = "meter_read_success.csv"
-VISIT_FILE = "field_visits.csv"
+METER_FILE = "data/meter_read_success.csv"
+VISIT_FILE = "data/field_visits.csv"
 
 meter = pd.read_csv(METER_FILE, encoding="latin1")
 visits = pd.read_csv(VISIT_FILE, encoding="latin1")

@@ -25,7 +25,7 @@ The solution uses the challenge-provided datasets:
 * `field_visits.csv`
 * `meter_read_success.csv`
 * `engineer_review_2026-02.xlsx`
-* Monthly telemetry parquet files under `telemetry/`
+* Monthly telemetry parquet files under `data/telemetry/`
 
 The telemetry data covers August 2025 through March 2026.
 
@@ -50,7 +50,7 @@ Gateway IDs are normalized before joining datasets so that formatting difference
 
 A gateway is considered problematic when its **next-week meter-read success is below 80%**.
 
-This was selected after comparing different candidate thresholds.
+This target was selected after comparing different candidate thresholds.
 
 The observed next-week problem rates based on current-week read success were:
 
@@ -161,7 +161,7 @@ The ML model was compared with the supplied 3-sigma baseline using the same oper
 | Cost reduction   | **€33,320** |
 | Improvement      |   **23.0%** |
 
-The ML approach therefore achieved a **23.0% lower evaluated operational cost** than the 3-sigma baseline.
+The Random Forest approach therefore achieved a **23.0% lower evaluated operational cost** than the supplied 3-sigma baseline on the historical evaluation period.
 
 The comparison was performed on historical prediction weeks where the following week's actual outcome was available.
 
@@ -217,6 +217,7 @@ Validation result:
 
 ```text
 predictions.csv: OK
+
 15 ranked gateways for each of 8 weeks, 2026-02-02 to 2026-03-23
 ```
 
@@ -224,102 +225,111 @@ predictions.csv: OK
 
 ## 10. Project Files
 
-Current working files include:
+The repository is organized with solution code, outputs, documentation, and the resume at the top level. The challenge data is kept under the top-level `data/` directory and is excluded from Git.
 
 ```text
-03-challenge-data/
+NEXORA-2026/
 │
-├── data/
-│   ├── baseline_3sigma.py
-│   ├── gateway_master.csv
-│   ├── field_visits.csv
-│   ├── meter_read_success.csv
-│   ├── engineer_review_2026-02.xlsx
-│   │
-│   ├── step1_data_check.py
-│   ├── step2_eda.py
-│   ├── step3_target_definition.py
-│   ├── step4_ml_model.py
-│   ├── compare_baseline_cost.py
-│   │
-│   ├── predictions.csv
-│   ├── predictions_baseline.csv
-│   │
-│   ├── step3_target_definitions.csv
-│   ├── step3_read_success_bands.csv
-│   ├── step3_cost_analysis.csv
-│   ├── step3_gateway_sensitivity.csv
-│   ├── step4_model_comparison.csv
-│   ├── step4_feature_importance.csv
-│   ├── step4_weekly_evaluation.csv
-│   ├── baseline_historical_cost_evaluation.csv
-│   │
-│   ├── step3_next_week_risk_by_read_success.png
-│   ├── step3_cost_vs_threshold.png
-│   ├── step3_target_definition_sensitivity.png
-│   ├── step4_model_vs_baseline.png
-│   ├── step4_feature_importance.png
-│   │
-│   ├── DECISIONS.md
-│   ├── AI-USAGE.md
-│   ├── What-it-cannot-do.md
-│   │
-│   └── telemetry/
-│       ├── month=2025-08/
-│       ├── month=2025-09/
-│       ├── month=2025-10/
-│       ├── month=2025-11/
-│       ├── month=2025-12/
-│       ├── month=2026-01/
-│       ├── month=2026-02/
-│       └── month=2026-03/
+├── README.md
+├── DECISIONS.md
+├── AI-USAGE.md
+├── What-it-cannot-do.md
+├── 23091A3255.pdf
+│
+├── baseline_3sigma.py
+├── compare_baseline_cost.py
+├── step1_data_check.py
+├── step2_eda.py
+├── step3_target_definition.py
+├── step4_ml_model.py
+├── validate_submission.py
+│
+├── predictions.csv
+├── predictions_baseline.csv
+├── baseline_cost_evaluation.csv
+├── baseline_historical_cost_evaluation.csv
+│
+├── step3_target_definitions.csv
+├── step3_read_success_bands.csv
+├── step3_cost_analysis.csv
+├── step3_gateway_sensitivity.csv
+├── step4_cost_thresholds.csv
+├── step4_feature_importance.csv
+├── step4_model_comparison.csv
+├── step4_model_summary.csv
+├── step4_weekly_evaluation.csv
+│
+├── step3_next_week_risk_by_read_success.png
+├── step3_cost_vs_threshold.png
+├── step3_target_definition_sensitivity.png
+├── step4_model_vs_baseline.png
+├── step4_feature_importance.png
+│
+└── data/
+    ├── gateway_master.csv
+    ├── field_visits.csv
+    ├── meter_read_success.csv
+    ├── engineer_review_2026-02.xlsx
+    ├── telemetry_sample_2025-08.csv
+    │
+    └── telemetry/
+        ├── month=2025-08/
+        ├── month=2025-09/
+        ├── month=2025-10/
+        ├── month=2025-11/
+        ├── month=2025-12/
+        ├── month=2026-01/
+        ├── month=2026-02/
+        └── month=2026-03/
 ```
 
-> The final GitHub repository should follow the challenge requirement for a top-level `data/` directory. Challenge data itself should not be made public.
+The `data/` directory is kept local and excluded from Git using `.gitignore`, because the challenge data should not be made public.
 
 ---
 
 ## 11. How to Run
 
-The scripts are currently being developed and tested from the challenge data directory.
+Run the commands from the root of the `NEXORA-2026` repository.
+
+The solution uses the challenge data from the top-level `data/` directory.
 
 ### Step 1 — Data check
 
 ```bash
-python step1_data_check.py
+python step1_data_check.py --data .\data
 ```
 
 ### Step 2 — Exploratory analysis
 
 ```bash
-python step2_eda.py
+python step2_eda.py --data .\data
 ```
 
 ### Step 3 — Target definition and cost analysis
 
 ```bash
-python step3_target_definition.py
+python step3_target_definition.py --data .\data
 ```
 
 ### Step 4 — Train and evaluate ML model
 
 ```bash
-python step4_ml_model.py
+python step4_ml_model.py --data .\data
 ```
 
 ### Step 5 — Compare with 3-sigma baseline
 
 ```bash
-python compare_baseline_cost.py
+python compare_baseline_cost.py --data .\data
 ```
 
 ### Step 6 — Validate predictions
 
 ```bash
-python validate_submission.py predictions.csv
+python validate_submission.py .\predictions.csv
 ```
 
-The final submission must pass the provided validator before hand-in.
+The final prediction file must pass the provided validator before hand-in.
 
 ---
 
@@ -348,4 +358,4 @@ Instead of attempting to guarantee which gateways will fail, it answers the oper
 
 > **Which 15 gateways should the field team prioritize this week?**
 
-The final Random Forest model achieved a **23.0% lower evaluated cost than the supplied 3-sigma baseline**, while keeping the 15-gateway weekly limit and using only information available before each prediction week.
+The final Random Forest model achieved a **23.0% lower evaluated cost than the supplied 3-sigma baseline**, while keeping the 15-gateway weekly limit and using information available before each prediction week.
